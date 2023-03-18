@@ -1,35 +1,32 @@
-# compiled output
-/dist
+# Dependencies
 /node_modules
 
-# Logs
-logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
+# Build output
+/dist
+
+# Environment files
 .env
-# OS
-.DS_Store
 
-# Tests
+# Test coverage
 /coverage
-/.nyc_output
 
-# IDEs and editors
+# IDE files
 /.idea
+/.vscode
 .project
 .classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+# Logs
+*.log
+logs
+
+# Editor specific files
+*.swp
+*~
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# macOS specific files
+.DS_Store
