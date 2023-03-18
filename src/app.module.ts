@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { Task } from './tasks/entities/tasks.entity';
 import { TaskModule } from './tasks/tasks.module';
 
 
@@ -16,16 +19,20 @@ import { TaskModule } from './tasks/tasks.module';
         username: configService.get<string>('PGUSERNAME'),
         password: configService.get<string>('PGPASSWORD'),
         database: configService.get<string>('PGDATABASE'),
-        entities: ['dist/**/*.entity{.ts,.js}'], // Agregando entidades a la configuración
+        entities: [Task], // Agregando entidades a la configuración
         synchronize: true, 
         retryDelay:3000,
         retryAttempts:10,
       }),
       inject: [ConfigService],
+    }),TypeOrmModule.forFeature([Task]),
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+      isGlobal: true,
     }),
     TaskModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
