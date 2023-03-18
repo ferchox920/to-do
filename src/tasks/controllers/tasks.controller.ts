@@ -1,29 +1,35 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Task } from '../entities/tasks.entity';
+import { TaskService } from '../services/task.service';
+import { Entity } from 'typeorm';
 
+@Entity()
 @Controller('api/tasks')
-export class TasksController {
+export class TaskController {
+  constructor(private taskService: TaskService) {}
+
+  @Post()
+  create(@Body() body: any) {
+    return this.taskService.create(body);
+  }
+
   @Get()
-  getAllTasks() {
-    // lógica para obtener todas las tareas
+  async findAll(): Promise<Task[]> {
+    return this.taskService.findAll();
   }
 
   @Get(':id')
-  getTaskById(@Param('id') id: string) {
-    // lógica para obtener la tarea con el ID especificado
+  async findOne(@Param('id') id: string): Promise<Task> {
+    return this.taskService.findOne(+id);
   }
 
-  @Post()
-  createTask(@Body() taskData: any) {
-    // lógica para crear una nueva tarea con los datos proporcionados en taskData
-  }
-
-  @Put(':id')
-  updateTask(@Param('id') id: string, @Body() taskData: any) {
-    // lógica para actualizar la tarea con el ID especificado con los datos proporcionados en taskData
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() body: any): Promise<Task> {
+    return this.taskService.update(+id, body);
   }
 
   @Delete(':id')
-  deleteTask(@Param('id') id: string) {
-    // lógica para eliminar la tarea con el ID especificado
+  async remove(@Param('id') id: string) {
+    return this.taskService.remove(+id);
   }
 }

@@ -7,27 +7,30 @@ import { Task } from '../entities/tasks.entity';
 export class TaskService {
   constructor(
     @InjectRepository(Task)
-    private readonly taskRepository: Repository<Task>,
+    private taskRepository: Repository<Task>,
   ) {}
 
-  async create(task: Task): Promise<Task> {
-    return await this.taskRepository.save(task);
+  async create(body:any) {
+    const newTask = this.taskRepository.create(body);
+    return await this.taskRepository.save(newTask);
   }
 
-  async findAll(): Promise<Task[]> {
+  async findAll() {
     return await this.taskRepository.find();
   }
 
-  async findOne(id: number): Promise<Task> {
+  async findOne(id: number){
     return await this.taskRepository.findOne({where:{id}});
   }
 
-  async update(id: number, task: Task): Promise<Task> {
-    await this.taskRepository.update(id, task);
-    return await this.taskRepository.findOne({where:{id}});
+  async update(id: number, body: any) {
+    const task= await this.taskRepository.findOne({where:{id}})
+    this.taskRepository.merge(task, body)
+    return await this.taskRepository.save(task);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number): Promise<string> {
     await this.taskRepository.delete(id);
+    return `Task with ID ${id} successfully deleted`;
   }
 }
