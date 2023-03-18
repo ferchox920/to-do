@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Task } from './tasks/entities/tasks.entity';
 import { TaskModule } from './tasks/tasks.module';
+import { User } from './user/entities/user.entity';
+import { UserModule } from './user/user.module';
 
 
 @Module({
@@ -19,7 +21,7 @@ import { TaskModule } from './tasks/tasks.module';
         username: configService.get<string>('PGUSERNAME'),
         password: configService.get<string>('PGPASSWORD'),
         database: configService.get<string>('PGDATABASE'),
-        entities: [Task], // Agregando entidades a la configuración
+        entities: [Task, User], // Agregando entidades a la configuración
         synchronize: true, 
         retryDelay:3000,
         retryAttempts:10,
@@ -31,6 +33,7 @@ import { TaskModule } from './tasks/tasks.module';
       isGlobal: true,
     }),
     TaskModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
