@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Constants } from 'src/util/constants';
 import { Repository } from 'typeorm';
@@ -9,15 +13,21 @@ import { User } from '../entities/user.entity';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) 
+    @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const existingUser = await this.findUserByEmail(createUserDto.email);
+    if (existingUser) {
+      throw new BadRequestException('Email already in use');
+    }
+
     const newUser = new User();
     newUser.firstName = createUserDto.firstName;
     newUser.lastName = createUserDto.lastName;
     newUser.email = createUserDto.email;
+    newUser.password = createUserDto.password;
     newUser.role = Constants.ROLES.NORMAL_ROLE;
 
     const createdUser = await this.userRepository.save(newUser);
@@ -37,14 +47,28 @@ export class UserService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+  async findUserByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      throw new NotFoundException(`User with email ${email} not found`);
     }
-    user.firstName = updateUserDto.firstName || user.firstName;
-    user.lastName = updateUserDto.lastName || user.lastName;
-    user.email = updateUserDto.email || user.email;
+    return user;
+  }
+
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+
+    const email = updateUserDto.email;
+    if (email && email !== user.email) {
+      const existingUser = await this.findUserByEmail(email);
+      if (existingUser) {
+        throw new BadRequestException('Email already in use');
+      }
+    }
+
+    user.firstName = updateUserDto.firstName ?? user.firstName;
+    user.lastName = updateUserDto.lastName ?? user.lastName;
+    user.email = email ?? user.email;
 
     const updatedUser = await this.userRepository.save(user);
 
