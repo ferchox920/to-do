@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from 'src/user/services/user.service';
 import { Repository } from 'typeorm';
@@ -13,16 +14,18 @@ export class TaskService {
     private userService: UserService,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto, userId: number) {
-    const user = await this.userService.findOne(userId);
-
+  async create(createTaskDto: CreateTaskDto, id: number) {
+  
+    const user = await this.userService.findOne(id);
+    
     const task = new Task();
     task.name = createTaskDto.name;
     task.description = createTaskDto.description;
-    task.user = await this.userService.findOne(userId);
-
+    task.user = user;
+  
     return await this.taskRepository.save(task);
   }
+  
 
   async findAll() {
     return await this.taskRepository.find();
