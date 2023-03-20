@@ -9,6 +9,8 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entity';
+import { HttpException, HttpStatus } from '@nestjs/common';
+
 
 @Injectable()
 export class UserService {
@@ -18,29 +20,33 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const existingUser = await this.findUserByEmail(createUserDto.email);
-    if (existingUser) {
-      throw new BadRequestException('Email already in use');
+    const { firstName, lastName, email, password } = createUserDto;
+  
+    const userExists = await this.userRepository.findOne({where:{ email }});
+  
+    if (userExists) {
+      throw new HttpException('User with that email already exists', HttpStatus.CONFLICT);
     }
-
+  
     const newUser = new User();
-    newUser.firstName = createUserDto.firstName;
-    newUser.lastName = createUserDto.lastName;
-    newUser.email = createUserDto.email;
-    newUser.password = createUserDto.password;
+    newUser.firstName = firstName;
+    newUser.lastName = lastName;
+    newUser.email = email;
+    newUser.password = password;
     newUser.role = Constants.ROLES.NORMAL_ROLE;
-
+  
     const createdUser = await this.userRepository.save(newUser);
-
+  
     return createdUser;
   }
+  
 
   async findAll(): Promise<User[]> {
     return await this.userRepository.find();
   }
 
   async findOne(id: number) {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({ where: {id: id } });
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }

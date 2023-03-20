@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { CreateTaskDto } from '../dto/create-tasks.dto';
 import { Task } from '../entities/tasks.entity';
 
-
 @Injectable()
 export class TaskService {
   constructor(
@@ -20,7 +19,7 @@ export class TaskService {
     const task = new Task();
     task.name = createTaskDto.name;
     task.description = createTaskDto.description;
-    task.user = user;
+    task.user = await this.userService.findOne(userId);
 
     return await this.taskRepository.save(task);
   }
@@ -29,18 +28,30 @@ export class TaskService {
     return await this.taskRepository.find();
   }
 
-  async findOne(id: number){
-    return await this.taskRepository.findOne({where:{id}});
+  async findAllTaskByUserNotCompleted(userId: number) {
+    return await this.taskRepository.find({
+      relations: ['user'],
+      where: { user: { id: userId }, completed: false },
+    });
   }
 
-  async update(id: number, body: any) {
-    const task = await this.taskRepository.findOne({where:{id}})
-    this.taskRepository.merge(task, body)
-    return await this.taskRepository.save(task);
+  async findAllTaskByUserCompleted(userId: number) {
+    return await this.taskRepository.find({
+      relations: ['user'],
+      where: { user: { id: userId }, completed: true },
+    });
   }
 
-  async remove(id: number): Promise<string> {
-    await this.taskRepository.delete(id);
-    return `Task with ID ${id} successfully deleted`;
+  async findOne(id: number) {
+    return await this.taskRepository.findOne({ where: { id } });
+  }
+
+  async update(taskId: number) {
+    return await this.taskRepository.update(taskId,{completed:true})
+  }
+
+  async remove(taskId: number): Promise<string> {
+    await this.taskRepository.delete(taskId);
+    return `Task with ID ${taskId} successfully deleted`;
   }
 }
